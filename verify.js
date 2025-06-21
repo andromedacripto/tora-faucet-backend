@@ -4,7 +4,14 @@ const cors = require("cors");
 const Web3 = require("web3").default;
 
 const app = express();
-app.use(cors());
+
+// Configura o CORS para liberar só o frontend Netlify
+const corsOptions = {
+  origin: "https://faucet-tora.netlify.app",
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // === CONFIGURAÇÕES ===
@@ -33,21 +40,15 @@ const tokenAbi = [
 
 const contract = new web3.eth.Contract(tokenAbi, TOKEN_ADDRESS);
 
-// Objeto para guardar timestamps do último claim por wallet
-const lastClaimTimestamps = {};
-
-// Tempo de bloqueio em milissegundos (24h = 86400000ms)
-const LOCK_TIME = 24 * 60 * 60 * 1000;
-
 app.post("/verify-captcha", async (req, res) => {
-  const captchaToken = req.body.response;  // no front, o token vem em 'response'
-  const address = req.body.address.toLowerCase();
+  const captchaToken = req.body.response;
+  const address = req.body.address;
 
   if (!captchaToken || !address) {
     return res.status(400).json({ success: false, message: "Token ou endereço ausente." });
   }
 
-  // Verificar o reCAPTCHA no Google
+  // Verifica o reCAPTCHA
   const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -60,20 +61,6 @@ app.post("/verify-captcha", async (req, res) => {
     return res.status(400).json({ success: false, message: "CAPTCHA inválido." });
   }
 
-  // Verificar bloqueio de 24 horas
-  const now = Date.now();
-  const lastClaim = lastClaimTimestamps[address] || 0;
-
-  if (now - lastClaim < LOCK_TIME) {
-    const remainingMs = LOCK_TIME - (now - lastClaim);
-    const remainingHours = Math.floor(remainingMs / (1000 * 60 * 60));
-    const remainingMinutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-    return res.status(429).json({ 
-      success: false, 
-      message: `Você já fez o claim nas últimas 24 horas. Tente novamente em ${remainingHours}h ${remainingMinutes}min.` 
-    });
-  }
-
   try {
     const amount = web3.utils.toWei("10", "ether"); // 10 TORA
     const tx = await contract.methods.transfer(address, amount).send({
@@ -82,7 +69,6 @@ app.post("/verify-captcha", async (req, res) => {
     });
 
     console.log("✅ TORA enviado:", tx.transactionHash);
-    lastClaimTimestamps[address] = now; // Atualiza timestamp do claim
     res.json({ success: true, txHash: tx.transactionHash });
   } catch (error) {
     console.error("Erro ao transferir TORA:", error);
@@ -93,6 +79,7 @@ app.post("/verify-captcha", async (req, res) => {
 app.listen(3000, () => {
   console.log("✅ Backend rodando em http://localhost:3000");
 });
+
 
 
 
