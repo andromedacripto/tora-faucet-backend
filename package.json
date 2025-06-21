@@ -2,9 +2,9 @@
   "name": "tora-faucet-backend",
   "version": "1.0.0",
   "description": "Backend da faucet TORA",
-  "main": "index.js",
+  "main": "verify.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node verify.js"
   },
   "dependencies": {
     "axios": "^1.6.8",
@@ -17,3 +17,4 @@
     "node": "18.x"
   }
 }
+
