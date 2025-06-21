@@ -33,9 +33,15 @@ const tokenAbi = [
 
 const contract = new web3.eth.Contract(tokenAbi, TOKEN_ADDRESS);
 
+// Objeto para guardar timestamps do último claim por wallet
+const lastClaimTimestamps = {};
+
+// Tempo de bloqueio em milissegundos (24h = 86400000ms)
+const LOCK_TIME = 24 * 60 * 60 * 1000;
+
 app.post("/verify-captcha", async (req, res) => {
   const captchaToken = req.body.response;  // no front, o token vem em 'response'
-  const address = req.body.address;
+  const address = req.body.address.toLowerCase();
 
   if (!captchaToken || !address) {
     return res.status(400).json({ success: false, message: "Token ou endereço ausente." });
@@ -49,9 +55,23 @@ app.post("/verify-captcha", async (req, res) => {
   });
 
   const data = await response.json();
-console.log("Verificação do reCAPTCHA:", data);
+  console.log("Verificação do reCAPTCHA:", data);
   if (!data.success) {
     return res.status(400).json({ success: false, message: "CAPTCHA inválido." });
+  }
+
+  // Verificar bloqueio de 24 horas
+  const now = Date.now();
+  const lastClaim = lastClaimTimestamps[address] || 0;
+
+  if (now - lastClaim < LOCK_TIME) {
+    const remainingMs = LOCK_TIME - (now - lastClaim);
+    const remainingHours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const remainingMinutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    return res.status(429).json({ 
+      success: false, 
+      message: `Você já fez o claim nas últimas 24 horas. Tente novamente em ${remainingHours}h ${remainingMinutes}min.` 
+    });
   }
 
   try {
@@ -62,6 +82,7 @@ console.log("Verificação do reCAPTCHA:", data);
     });
 
     console.log("✅ TORA enviado:", tx.transactionHash);
+    lastClaimTimestamps[address] = now; // Atualiza timestamp do claim
     res.json({ success: true, txHash: tx.transactionHash });
   } catch (error) {
     console.error("Erro ao transferir TORA:", error);
@@ -72,5 +93,6 @@ console.log("Verificação do reCAPTCHA:", data);
 app.listen(3000, () => {
   console.log("✅ Backend rodando em http://localhost:3000");
 });
+
 
 
