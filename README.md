@@ -19,6 +19,7 @@ cd tora-faucet-backend
 Com o backend rodando em `http://localhost:3000`, você pode fazer uma requisição `POST` para o endpoint `/claim`.
 
 ### 🔗 Endpoint
+
 #### POST /claim
 
 - Descrição: solicita tokens TORA para um endereço válido em uma testnet Ethereum.
@@ -29,4 +30,5 @@ Com o backend rodando em `http://localhost:3000`, você pode fazer uma requisiç
   "address": "0xSeuEnderecoEthereum",
   "recaptchaToken": "token_do_recaptcha"
 }
+
 
