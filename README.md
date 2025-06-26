@@ -13,8 +13,3 @@ Clone o repositório:
 ```bash
 git clone https://github.com/andromedacripto/tora-faucet-backend.git
 cd tora-faucet-backend
-
-Instale as dependências:
-
-```bash
-npm install
