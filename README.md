@@ -13,3 +13,10 @@ Clone o repositório:
 ```bash
 git clone https://github.com/andromedacripto/tora-faucet-backend.git
 cd tora-faucet-backend
+
+## ▶️ Uso da API
+
+Com o backend rodando em `http://localhost:3000`, você pode fazer uma requisição `POST` para o endpoint `/claim`.
+
+### 🔗 Endpoint
+
