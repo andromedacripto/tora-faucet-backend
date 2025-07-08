@@ -9,18 +9,20 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// === CONFIGURAÇÕES ===
-const SECRET_KEY = "6LcKmGUrAAAAANzc99Ttfz7goUJlG7CdXKHY9EdM"; // sua secret do reCAPTCHA
-const INFURA_URL = "https://sepolia.infura.io/v3/fa6ca458540b46e58dc33801cb1fcd65";
-const PRIVATE_KEY = "0xd379be7cf2b950cf111cedee0a33c448eda46a32b23223d4d18dfc9dac336682";
-const TOKEN_ADDRESS = "0x2bd73CCaC4194Fe41481e49935Aa972AA69e4A6E";
+// === CONFIGURAÇÕES via .env ===
+require('dotenv').config();
+
+const SECRET_KEY = process.env.SECRET_KEY;
+const INFURA_URL = process.env.INFURA_URL;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
 
 const web3 = new Web3(INFURA_URL);
 const account = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY);
 web3.eth.accounts.wallet.add(account);
 web3.eth.defaultAccount = account.address;
 
-// ABI do token (somente função transfer)
+// ABI do token (função transfer)
 const tokenAbi = [
   {
     constant: false,
@@ -86,6 +88,7 @@ app.post("/verify-captcha", async (req, res) => {
   }
 });
 
+// Porta que o Render ou ambiente define, ou 3000 localmente
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Backend rodando em http://localhost:${PORT}`);
