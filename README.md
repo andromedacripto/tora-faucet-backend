@@ -2,7 +2,7 @@
 
 Backend service for the Tora Faucet project, responsible for securely distributing TORA tokens on the Sepolia Ethereum testnet.
 
-                            **This project is intended for testing and learning purposes only.**
+**This project is intended for testing and learning purposes only.**
 
 ## Features
 
